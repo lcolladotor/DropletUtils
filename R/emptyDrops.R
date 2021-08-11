@@ -302,6 +302,7 @@ testEmptyDrops <- function(m, lower=100, niters=10000, test.ambient=FALSE, ignor
     list(seeds=seeds.per.core, streams=streams.per.core)
 }
 
+#' @importFrom stats aggregate
 #' @importFrom beachmat whichNonZero
 .compute_multinom_prob_data <- function(block, prop, alpha=Inf, BPPARAM=SerialParam())
 # Efficiently calculates the data-dependent component of the log-multinomial probability
@@ -320,12 +321,9 @@ testEmptyDrops <- function(m, lower=100, niters=10000, test.ambient=FALSE, ignor
         p.n0 <- lgamma(alpha.prop + x) - lfactorial(x) - lgamma(alpha.prop)
     }
 
-    # No need to defend against NA values from tapply,
-    # these should not be present after removal of all-zero columns.
-    j <- factor(j, levels=seq_len(ncol(block)))
-    obs.P <- tapply(p.n0, INDEX=j, FUN=sum)
-    obs.P <- as.numeric(obs.P)
-    obs.P[!seq_len(ncol(block)) %in% unique(j)] <- 0
+    by.col <- aggregate(p.n0, list(Col=j), sum)
+    obs.P <- numeric(ncol(block))
+    obs.P[by.col$Col] <- by.col$x
     return(obs.P)
 }
 
