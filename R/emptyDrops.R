@@ -324,7 +324,9 @@ testEmptyDrops <- function(m, lower=100, niters=10000, test.ambient=FALSE, ignor
     # these should not be present after removal of all-zero columns.
     j <- factor(j, levels=seq_len(ncol(block)))
     obs.P <- tapply(p.n0, INDEX=j, FUN=sum)
-    as.numeric(obs.P)
+    obs.P <- as.numeric(obs.P)
+    obs.P[!seq_len(ncol(block)) %in% unique(j)] <- 0
+    return(obs.P)
 }
 
 .compute_multinom_prob_rest <- function(totals, alpha=Inf) 
